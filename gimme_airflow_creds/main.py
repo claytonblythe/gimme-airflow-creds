@@ -189,18 +189,6 @@ class GimmeAIRFLOWCreds(object):
             airflow_config=airflow_config,
         )
 
-
-    @staticmethodx
-    def _call_gimme_creds_server(okta_connection, gimme_creds_server_url):
-        """ Retrieve the user's airflow accounts from the gimme_creds_server"""
-        response = okta_connection.get(gimme_creds_server_url)
-
-        # Throw an error if we didn't get any accounts back
-        if not response.json():
-            raise errors.GimmeAIRFLOWCredsError("No airflow accounts found.")
-
-        return response.json()x
-
     @staticmethod
     def _get_airflow_account_info(okta_org_url, okta_api_key, username):
         """ Call the Okta User API and process the results to return
@@ -612,12 +600,6 @@ class GimmeAIRFLOWCreds(object):
         self._cache['requested_roles'] = requested_roles = self.config.roles or self.conf_dict.get('aws_rolename', '')
         return requested_roles
 
-    @property
-    def aws_partition(self):
-        if 'aws_partition' in self._cache:
-            return self._cache['aws_partition']
-        self._cache['aws_partition'] = aws_partition = self._get_partition_from_saml_acs(self.saml_data['TargetUrl'])
-        return aws_partition
 
     def prepare_data(self, role, generate_credentials=False):
         aws_creds = {}
@@ -644,7 +626,6 @@ class GimmeAIRFLOWCreds(object):
                 else:
                     self.ui.error('Failed to generate credentials for {} due to {}'.format(role.role, ex))
 
-        naming_data = self._parse_role_arn(role.role)
         # set the profile name
         # Note if there are multiple roles
         # it will be overwritten multiple times and last role wins.

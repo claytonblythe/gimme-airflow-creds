@@ -50,7 +50,7 @@ class TestConfig(unittest.TestCase):
             "--profile",
             "myprofile",
         ])
-        with open(test_ui.HOME + "/.okta_aws_login_config", "w") as config_file:
+        with open(test_ui.HOME + "/.okta_airflow_login_config", "w") as config_file:
             config_file.write("""
 [myprofile]
 client_id = foo
@@ -66,7 +66,7 @@ client_id = foo
             "--profile",
             "myprofile",
         ])
-        with open(test_ui.HOME + "/.okta_aws_login_config", "w") as config_file:
+        with open(test_ui.HOME + "/.okta_airflow_login_config", "w") as config_file:
             config_file.write(
                 """
                 [mybase]
@@ -94,7 +94,7 @@ client_id = foo
             "--profile",
             "myprofile",
         ])
-        with open(test_ui.HOME + "/.okta_aws_login_config", "w") as config_file:
+        with open(test_ui.HOME + "/.okta_airflow_login_config", "w") as config_file:
             config_file.write("""
 [mybase-level1]
 client_id = bar
@@ -118,14 +118,14 @@ aws_rolename = myrole
     def test_fail_if_profile_not_found(self):
         """Test to make sure missing Default fails properly"""
         test_ui = MockUserInterface(argv=[])
-        with open(test_ui.HOME + "/.okta_aws_login_config", "w") as config_file:
+        with open(test_ui.HOME + "/.okta_airflow_login_config", "w") as config_file:
             config_file.write("""
         [myprofile]
         client_id = foo
         """)
         config = Config(gac_ui=test_ui, create_config=False)
         config.conf_profile = "DEFAULT"
-        with self.assertRaises(errors.GimmeAWSCredsError) as context:
+        with self.assertRaises(errors.GimmeAIRFLOWCredsError) as context:
             config.get_config_dict()
         self.assertTrue('DEFAULT profile is missing! This is profile is required when not using --profile' == context.exception.message)
 

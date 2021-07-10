@@ -44,7 +44,7 @@ class DefaultResolver(object):
                 elif 'role' in field:
                     role = field
             if not idp or not role:
-                raise errors.GimmeAWSCredsError('Parsing error on {}'.format(role_pair))
+                raise errors.GimmeAIRFLOWCredsError('Parsing error on {}'.format(role_pair))
             else:
                 result.append(commondef.RoleSet(idp=idp, role=role, friendly_account_name="", friendly_role_name=""))
 

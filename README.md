@@ -53,11 +53,11 @@ docker build -t gimme-airflow-creds .
 To make it easier you can also create an alias for the gimme-airflow-creds command with docker:
 
 ```bash
-# make sure you have the "~/.okta_aws_login_config" locally first!
-touch ~/.okta_aws_login_config && \
+# make sure you have the "~/.okta_airflow_login_config" locally first!
+touch ~/.okta_airflow_login_config && \
 alias gimme-airflow-creds="docker run -it --rm \
   -v ~/.airflow/credentials:/root/.airflow/credentials \
-  -v ~/.okta_aws_login_config:/root/.okta_airflow_login_config \
+  -v ~/.okta_airflow_login_config:/root/.okta_airflow_login_config \
   gimme-airflow-creds"
 ```
 
@@ -77,7 +77,7 @@ You can also set up different Okta configuration profiles, this useful if you ha
 gimme-airflow-creds --action-configure --profile profileName
 ```
 
-A configuration wizard will prompt you to enter the necessary configuration parameters for the tool to run, the only one that is required is the `okta_org_url`. The configuration file is written to `~/.okta_aws_login_config`, but you can change the location with the environment variable `OKTA_CONFIG`.
+A configuration wizard will prompt you to enter the necessary configuration parameters for the tool to run, the only one that is required is the `okta_org_url`. The configuration file is written to `~/.okta_airflow_login_config`, but you can change the location with the environment variable `OKTA_CONFIG`.
 
 - conf_profile - This sets the Okta configuration profile name, the default is DEFAULT.
 - okta_org_url - This is your Okta organization url, which is typically something like `https://companyname.okta.com`.
@@ -230,7 +230,7 @@ account_ids = sys.argv[1:] or [
 pattern = "|".join(sorted(set(account_ids)))
 pattern = '/:({}):/'.format(pattern)
 ui = gimme_airflow_creds.ui.CLIUserInterface(argv=[sys.argv[0], '--roles', pattern])
-creds = gimme_airflow_creds.main.GimmeAWSCreds(ui=ui)
+creds = gimme_airflow_creds.main.GimmeAIRFLOWCreds(ui=ui)
 
 # Print out all selected roles:
 for role in creds.aws_selected_roles:

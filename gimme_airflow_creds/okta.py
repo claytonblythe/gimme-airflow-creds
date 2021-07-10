@@ -33,7 +33,7 @@ from requests.adapters import HTTPAdapter, Retry
 from gimme_airflow_creds.u2f import FactorU2F
 from gimme_airflow_creds.webauthn import WebAuthnClient, FakeAssertion
 from . import errors, ui, version, duo
-from .errors import GimmeAWSCredsMFAEnrollStatus
+from .errors import GimmeAIRFLOWCredsMFAEnrollStatus
 from .registered_authenticators import RegisteredAuthenticators
 
 
@@ -293,7 +293,7 @@ class OktaClient(object):
     def _next_login_step(self, state_token, login_data):
         """ decide what the next step in the login process is"""
         if 'errorCode' in login_data:
-            raise errors.GimmeAWSCredsError(
+            raise errors.GimmeAIRFLOWCredsError(
                 "LOGIN ERROR: {} | Error Code: {}".format(login_data['errorSummary'], login_data['errorCode']), 2)
 
         status = login_data['status']
@@ -301,9 +301,9 @@ class OktaClient(object):
         if status == 'UNAUTHENTICATED':
             return self._login_username_password(state_token, login_data['_links']['next']['href'])
         elif status == 'LOCKED_OUT':
-            raise errors.GimmeAWSCredsError("Your Okta access has been locked out due to failed login attempts.", 2)
+            raise errors.GimmeAIRFLOWCredsError("Your Okta access has been locked out due to failed login attempts.", 2)
         elif status == 'MFA_ENROLL':
-            raise GimmeAWSCredsMFAEnrollStatus()
+            raise GimmeAIRFLOWCredsMFAEnrollStatus()
         elif status == 'MFA_REQUIRED':
             return self._login_multi_factor(state_token, login_data)
         elif status == 'MFA_CHALLENGE':
@@ -357,7 +357,7 @@ class OktaClient(object):
                         keyring.delete_password(self.KEYRING_SERVICE, creds['username'])
                     except PasswordDeleteError:
                         pass
-            raise errors.GimmeAWSCredsError(
+            raise errors.GimmeAIRFLOWCredsError(
                 "LOGIN ERROR: {} | Error Code: {}".format(response_data['errorSummary'], response_data['errorCode']), 2)
 
         # If the error code isn't one we know how to handle, raise an exception
@@ -798,7 +798,7 @@ class OktaClient(object):
 
         # make sure the choice is valid
         if selection is None:
-            raise errors.GimmeAWSCredsError("You made an invalid selection")
+            raise errors.GimmeAIRFLOWCredsError("You made an invalid selection")
 
         return factors[selection]
 
@@ -892,7 +892,7 @@ class OktaClient(object):
                         self.ui.warning("Failed to save password in keyring: " + str(err))
 
         if not password:
-            raise errors.GimmeAWSCredsError('Password was not provided. Exiting.')
+            raise errors.GimmeAIRFLOWCredsError('Password was not provided. Exiting.')
 
         return {'username': username, 'password': password}
 
@@ -913,7 +913,7 @@ class OktaClient(object):
 
         try:
             self.stepup_auth(setup_fido_authenticator_url, state_token)
-        except errors.GimmeAWSCredsMFAEnrollStatus:
+        except errors.GimmeAIRFLOWCredsMFAEnrollStatus:
             # Expected while adding a new fido authenticator
             pass
 

@@ -279,14 +279,14 @@ class TestOktaClient(unittest.TestCase):
 #    @patch('builtins.input', return_value='ann')
 #    def test_bad_username(self, mock_pass, mock_input):
 #        """Test that initial authentication works with Okta"""
-#        with self.assertRaises(errors.GimmeAWSCredsExitBase):
+#        with self.assertRaises(errors.GimmeAIRFLOWCredsExitBase):
 #            self.client._get_username_password_creds()
 
     @patch('getpass.getpass', return_value='')
     @patch('builtins.input', return_value='ann@example.com')
     def test_missing_password(self, mock_pass, mock_input):
         """Test that initial authentication works with Okta"""
-        with self.assertRaises(errors.GimmeAWSCredsExitBase):
+        with self.assertRaises(errors.GimmeAIRFLOWCredsExitBase):
             self.client._get_username_password_creds()
 
     @responses.activate
@@ -1007,7 +1007,7 @@ class TestOktaClient(unittest.TestCase):
     @patch('builtins.input', return_value='12')
     def test_choose_bad_factor_totp(self, mock_input):
         """ Test selecting an invalid MFA factor"""
-        with self.assertRaises(errors.GimmeAWSCredsExitBase):
+        with self.assertRaises(errors.GimmeAIRFLOWCredsExitBase):
             result = self.client._choose_factor(self.factor_list)
 
     @patch('builtins.input', return_value='3')
@@ -1019,7 +1019,7 @@ class TestOktaClient(unittest.TestCase):
     @patch('builtins.input', return_value='a')
     def test_choose_non_number_factor_totp(self, mock_input):
         """ Test entering a non number value as MFA factor"""
-        with self.assertRaises(errors.GimmeAWSCredsExitBase):
+        with self.assertRaises(errors.GimmeAIRFLOWCredsExitBase):
             result = self.client._choose_factor(self.factor_list)
 
     def test_build_factor_name_sms(self):

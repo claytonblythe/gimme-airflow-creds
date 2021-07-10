@@ -179,7 +179,7 @@ class Config(object):
         if "inherits" in profile_config.keys() and include_inherits:
             self.ui.message("Using inherited config: " + profile_config["inherits"])
             if profile_config["inherits"] not in config:
-                raise errors.GimmeAWSCredsError(self.conf_profile + " inherits from " + profile_config["inherits"] + ", but could not find " + profile_config["inherits"])
+                raise errors.GimmeAIRFLOWCredsError(self.conf_profile + " inherits from " + profile_config["inherits"] + ", but could not find " + profile_config["inherits"])
             combined_config = {
                 **self._handle_config(config, dict(config[profile_config["inherits"]])),
                 **profile_config,
@@ -204,9 +204,9 @@ class Config(object):
             except KeyError:
                 if self.action_configure:
                     return {}
-                raise errors.GimmeAWSCredsError(
+                raise errors.GimmeAIRFLOWCredsError(
                     'Configuration profile not found! Use the --action-configure flag to generate the profile.')
-        raise errors.GimmeAWSCredsError('Configuration file not found! Use the --action-configure flag to generate file.')
+        raise errors.GimmeAIRFLOWCredsError('Configuration file not found! Use the --action-configure flag to generate file.')
 
     def update_config_file(self):
         """
@@ -577,5 +577,5 @@ class Config(object):
         Ensure that whichever profile is set as the default exists in the end users okta config
         """
         if not profile_config and conf_profile == default_section:
-            raise errors.GimmeAWSCredsError(
+            raise errors.GimmeAIRFLOWCredsError(
                 'DEFAULT profile is missing! This is profile is required when not using --profile')
