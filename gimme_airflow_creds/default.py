@@ -12,7 +12,7 @@ See the License for the specific language governing permissions and* limitations
 import base64
 import xml.etree.ElementTree as ET
 
-import gimme_aws_creds.common as commondef
+import gimme_airflow_creds.common as commondef
 from . import errors
 
 

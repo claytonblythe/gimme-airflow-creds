@@ -1,10 +1,10 @@
-"""Unit tests for gimme_aws_creds.config.Config"""
+"""Unit tests for gimme_airflow_creds.config.Config"""
 import argparse
 import unittest
 from unittest.mock import patch
 
-from gimme_aws_creds import ui, errors
-from gimme_aws_creds.config import Config
+from gimme_airflow_creds import ui, errors
+from gimme_airflow_creds.config import Config
 from tests.user_interface_mock import MockUserInterface
 
 

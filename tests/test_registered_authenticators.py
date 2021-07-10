@@ -2,7 +2,7 @@ import json
 import os
 import unittest
 
-from gimme_aws_creds.registered_authenticators import RegisteredAuthenticators, RegisteredAuthenticator
+from gimme_airflow_creds.registered_authenticators import RegisteredAuthenticators, RegisteredAuthenticator
 from tests.user_interface_mock import MockUserInterface
 
 

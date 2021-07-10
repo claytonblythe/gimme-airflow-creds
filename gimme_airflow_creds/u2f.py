@@ -22,7 +22,7 @@ from fido2.ctap1 import Ctap1
 from fido2.hid import CtapHidDevice
 from fido2.utils import sha256, websafe_decode
 
-from gimme_aws_creds.errors import NoFIDODeviceFoundError, FIDODeviceTimeoutError, FIDODeviceError
+from gimme_airflow_creds.errors import NoFIDODeviceFoundError, FIDODeviceTimeoutError, FIDODeviceError
 
 
 class FactorU2F(object):

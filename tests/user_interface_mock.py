@@ -1,6 +1,6 @@
 import tempfile
 
-from gimme_aws_creds import ui
+from gimme_airflow_creds import ui
 
 
 class MockUserInterface(ui.UserInterface):

@@ -17,7 +17,7 @@ from bs4 import BeautifulSoup
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
-import gimme_aws_creds.common as commondef
+import gimme_airflow_creds.common as commondef
 from . import errors
 
 

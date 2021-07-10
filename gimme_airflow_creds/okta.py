@@ -30,8 +30,8 @@ from keyring.backends.fail import Keyring as FailKeyring
 from keyring.errors import PasswordDeleteError
 from requests.adapters import HTTPAdapter, Retry
 
-from gimme_aws_creds.u2f import FactorU2F
-from gimme_aws_creds.webauthn import WebAuthnClient, FakeAssertion
+from gimme_airflow_creds.u2f import FactorU2F
+from gimme_airflow_creds.webauthn import WebAuthnClient, FakeAssertion
 from . import errors, ui, version, duo
 from .errors import GimmeAWSCredsMFAEnrollStatus
 from .registered_authenticators import RegisteredAuthenticators

@@ -1,4 +1,4 @@
-"""Unit tests for gimme_aws_creds"""
+"""Unit tests for gimme_airflow_creds"""
 import sys
 import unittest
 from contextlib import contextmanager
@@ -8,8 +8,8 @@ import requests
 import responses
 from nose.tools import assert_equals
 
-import gimme_aws_creds.common as common_def
-from gimme_aws_creds.aws import AwsResolver
+import gimme_airflow_creds.common as common_def
+from gimme_airflow_creds.aws import AwsResolver
 
 
 class TestAwsResolver(unittest.TestCase):

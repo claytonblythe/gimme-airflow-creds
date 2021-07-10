@@ -1,13 +1,13 @@
 from setuptools import setup, find_packages
 
-import gimme_aws_creds
+import gimme_airflow_creds
 
 with open('requirements.txt') as f:
     requirements = f.read().splitlines()
 
 setup(
     name='gimme aws creds',
-    version=gimme_aws_creds.version,
+    version=gimme_airflow_creds.version,
     install_requires=requirements,
     author='Ann Wallace',
     author_email='ann.wallace@nike.com',

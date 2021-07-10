@@ -1,4 +1,4 @@
-"""Unit tests for gimme_aws_creds"""
+"""Unit tests for gimme_airflow_creds"""
 import hashlib
 import json
 import sys
@@ -14,8 +14,8 @@ from fido2.attestation import PackedAttestation
 from fido2.ctap2 import AttestationObject, AuthenticatorData, AttestedCredentialData
 from nose.tools import assert_equals
 
-from gimme_aws_creds import errors, ui
-from gimme_aws_creds.okta import OktaClient
+from gimme_airflow_creds import errors, ui
+from gimme_airflow_creds.okta import OktaClient
 
 
 class TestOktaClient(unittest.TestCase):
@@ -697,7 +697,7 @@ class TestOktaClient(unittest.TestCase):
     @responses.activate
     @patch('builtins.input', return_value='ann@example.com')
     @patch('getpass.getpass', return_value='1234qwert')
-    @patch('gimme_aws_creds.webauthn.WebAuthnClient.make_credential', return_value=(b'', AttestationObject.create(
+    @patch('gimme_airflow_creds.webauthn.WebAuthnClient.make_credential', return_value=(b'', AttestationObject.create(
         PackedAttestation.FORMAT, AuthenticatorData.create(
             hashlib.sha256(b'example.okta.com').digest(),
             AuthenticatorData.FLAG.USER_PRESENT | AuthenticatorData.FLAG.USER_VERIFIED | AuthenticatorData.FLAG.ATTESTED,
@@ -1063,7 +1063,7 @@ class TestOktaClient(unittest.TestCase):
         result = self.client._build_factor_name(self.webauthn_factor)
         assert_equals(result, "webauthn: " + authenticator_name)
 
-    @patch('gimme_aws_creds.registered_authenticators.RegisteredAuthenticators.get_authenticator_user',
+    @patch('gimme_airflow_creds.registered_authenticators.RegisteredAuthenticators.get_authenticator_user',
            return_value='jane.doe@example.com')
     def test_build_factor_name_webauthn_registered(self, mock_input):
         """ Test building a display name for a registered webauthn factor """

@@ -40,7 +40,7 @@ class GimmeAWSCreds(object):
        assigned to the user. The user is able to select the app
        and role from the CLI or specify them in a config file by
        passing --action-configure to the CLI too.
-       gimme_aws_creds will either write the credentials to stdout
+       gimme_airflow_creds will either write the credentials to stdout
        or ~/.aws/credentials depending on what was specified when
        --action-configure was ran.
 
@@ -237,7 +237,7 @@ class GimmeAWSCreds(object):
     @staticmethod
     def _get_aws_account_info(okta_org_url, okta_api_key, username):
         """ Call the Okta User API and process the results to return
-        just the information we need for gimme_aws_creds"""
+        just the information we need for gimme_airflow_creds"""
         # We need access to the entire JSON response from the Okta APIs, so we need to
         # use the low-level ApiClient instead of UsersClient and AppInstanceClient
         users_client = ApiClient(okta_org_url, okta_api_key, pathname='/api/v1/users')

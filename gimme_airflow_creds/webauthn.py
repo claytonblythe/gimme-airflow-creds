@@ -25,7 +25,7 @@ from fido2.webauthn import PublicKeyCredentialCreationOptions, \
     PublicKeyCredentialType, PublicKeyCredentialParameters, PublicKeyCredentialDescriptor, UserVerificationRequirement
 from fido2.webauthn import PublicKeyCredentialRequestOptions
 
-from gimme_aws_creds.errors import NoFIDODeviceFoundError, FIDODeviceTimeoutError
+from gimme_airflow_creds.errors import NoFIDODeviceFoundError, FIDODeviceTimeoutError
 
 
 class FakeAssertion(object):

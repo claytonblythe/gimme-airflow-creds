@@ -180,7 +180,7 @@ A list of values of to change with environment variables are:
 
 - `AIRFLOW_DEFAULT_DURATION` - corresponds to `aws_default_duration` configuration
 - `AWS_SHARED_CREDENTIALS_FILE` - file to write credentials to, points to `~/.AIRFLOW/credentials` by default
-- `GIMME_AWS_CREDS_CLIENT_ID` - corresponds to `client_id` configuration
+- `gimme_airflow_creds_CLIENT_ID` - corresponds to `client_id` configuration
 - `GIMME_AWS_CREDS_CRED_PROFILE` - corresponds to `cred_profile` configuration
 - `GIMME_AWS_CREDS_OUTPUT_FORMAT` - corresponds to `output_format` configuration and `--output-format` CLI option
 - `OKTA_AUTH_SERVER` - corresponds to `okta_auth_server` configuration
@@ -213,14 +213,14 @@ Data can be modified by scripts on the way.
 
 ### Usage in python code
 
-Configuration and interactions can be configured using [`gimme_aws_creds.ui`](./gimme_aws_creds/ui.py),
+Configuration and interactions can be configured using [`gimme_airflow_creds.ui`](./gimme_airflow_creds/ui.py),
 UserInterfaces support all kind of interactions within library including: asking for input, `sys.argv` and `os.environ`
 overrides.
 
 ```python
 import sys
-import gimme_aws_creds.main
-import gimme_aws_creds.ui
+import gimme_airflow_creds.main
+import gimme_airflow_creds.ui
 
 account_ids = sys.argv[1:] or [
   '123456789012',
@@ -229,8 +229,8 @@ account_ids = sys.argv[1:] or [
 
 pattern = "|".join(sorted(set(account_ids)))
 pattern = '/:({}):/'.format(pattern)
-ui = gimme_aws_creds.ui.CLIUserInterface(argv=[sys.argv[0], '--roles', pattern])
-creds = gimme_aws_creds.main.GimmeAWSCreds(ui=ui)
+ui = gimme_airflow_creds.ui.CLIUserInterface(argv=[sys.argv[0], '--roles', pattern])
+creds = gimme_airflow_creds.main.GimmeAWSCreds(ui=ui)
 
 # Print out all selected roles:
 for role in creds.aws_selected_roles:
