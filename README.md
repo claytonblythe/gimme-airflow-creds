@@ -146,8 +146,8 @@ Pick an app:
 [ 1 ] AIRFLOW Prod Account
 Selection: 1
 Pick a role:
-[ 0 ]: OktaAWSAdminRole
-[ 1 ]: OktaAWSReadOnlyRole
+[ 0 ]: OktaAIRFLOWAdminRole
+[ 1 ]: OktaAIRFLOWReadOnlyRole
 Selection: 1
 Multi-factor Authentication required.
 Pick a factor:
@@ -155,8 +155,8 @@ Pick a factor:
 [ 1 ] token:software:totp: user@domain.com
 Selection: 0
 Okta Verify push sent...
-export AWS_ACCESS_KEY_ID=AQWERTYUIOP
-export AWS_SECRET_ACCESS_KEY=T!#$JFLOJlsoddop1029405-P
+export AIRFLOW_ACCESS_KEY_ID=AQWERTYUIOP
+export AIRFLOW_SECRET_ACCESS_KEY=T!#$JFLOJlsoddop1029405-P
 ```
 
 You can automate the environment variable creation by running `$(gimme-airflow-creds)` on linux or `iex (gimme-airflow-creds)` using Windows Powershell
@@ -179,17 +179,17 @@ Alternatively, you can overwrite values in the config section with environment v
 A list of values of to change with environment variables are:
 
 - `AIRFLOW_DEFAULT_DURATION` - corresponds to `aws_default_duration` configuration
-- `AWS_SHARED_CREDENTIALS_FILE` - file to write credentials to, points to `~/.AIRFLOW/credentials` by default
+- `AIRFLOW_SHARED_CREDENTIALS_FILE` - file to write credentials to, points to `~/.AIRFLOW/credentials` by default
 - `gimme_airflow_creds_CLIENT_ID` - corresponds to `client_id` configuration
-- `GIMME_AWS_CREDS_CRED_PROFILE` - corresponds to `cred_profile` configuration
-- `GIMME_AWS_CREDS_OUTPUT_FORMAT` - corresponds to `output_format` configuration and `--output-format` CLI option
+- `GIMME_AIRFLOW_CREDS_CRED_PROFILE` - corresponds to `cred_profile` configuration
+- `GIMME_AIRFLOW_CREDS_OUTPUT_FORMAT` - corresponds to `output_format` configuration and `--output-format` CLI option
 - `OKTA_AUTH_SERVER` - corresponds to `okta_auth_server` configuration
 - `OKTA_DEVICE_TOKEN` - corresponds to `device_token` configuration, can be used in CI
 - `OKTA_MFA_CODE` - corresponds to `--mfa-code` CLI option
 - `OKTA_PASSWORD` - provides password during authentication, can be used in CI
 - `OKTA_USERNAME` - corresponds to `okta_username` configuration and `--username` CLI option
 
-Example: `GIMME_AWS_CREDS_CLIENT_ID='foobar' AWS_DEFAULT_DURATION=12345 gimme-airflow-creds`
+Example: `GIMME_AIRFLOW_CREDS_CLIENT_ID='foobar' AIRFLOW_DEFAULT_DURATION=12345 gimme-airflow-creds`
 
 For changing variables outside of this, you'd need to create a separate profile altogether with `gimme-airflow-creds --action-configure --profile profileName`
 
