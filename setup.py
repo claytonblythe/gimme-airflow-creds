@@ -6,12 +6,12 @@ with open('requirements.txt') as f:
     requirements = f.read().splitlines()
 
 setup(
-    name='gimme aws creds',
+    name='gimme airflow creds',
     version=gimme_airflow_creds.version,
     install_requires=requirements,
-    author='Ann Wallace',
-    author_email='ann.wallace@nike.com',
-    description="A CLI to get temporary AWS credentials from Okta",
+    author='Clayton Blythe',
+    author_email='claytondblythe@gmail.com',
+    description="A CLI to get temporary AIRFLOW credentials from Okta",
     url='https://github.com/Nike-Inc/gimme-airflow-creds',
     license='Apache License, v2.0',
     packages=find_packages(exclude=('tests', 'docs')),

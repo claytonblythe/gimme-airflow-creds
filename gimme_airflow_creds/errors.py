@@ -14,7 +14,7 @@ import sys
 from . import ui
 
 
-class GimmeAWSCredsExitBase(Exception):
+class GimmeAIRFLOWCredsExitBase(Exception):
     def __init__(self, message, return_code, result=None):
         """
         :type message: str
@@ -43,25 +43,25 @@ class GimmeAWSCredsExitBase(Exception):
         sys.exit(self.return_code)
 
 
-class GimmeAWSCredsExitSuccess(GimmeAWSCredsExitBase):
+class GimmeAIRFLOWCredsExitSuccess(GimmeAIRFLOWCredsExitBase):
     def __init__(self, message='', return_code=0, result=''):
         super().__init__(message, return_code, result)
 
 
-class GimmeAWSCredsExitError(GimmeAWSCredsExitBase):
+class GimmeAIRFLOWCredsExitError(GimmeAIRFLOWCredsExitBase):
     def __init__(self, message='ERROR', return_code=1, output=''):
         super().__init__(message, return_code, output)
 
 
-class GimmeAWSCredsExceptionBase(Exception):
+class GimmeAIRFLOWCredsExceptionBase(Exception):
     pass
 
 
-class GimmeAWSCredsError(GimmeAWSCredsExceptionBase, GimmeAWSCredsExitError):
+class GimmeAIRFLOWCredsError(GimmeAIRFLOWCredsExceptionBase, GimmeAIRFLOWCredsExitError):
     pass
 
 
-class GimmeAWSCredsMFAEnrollStatus(GimmeAWSCredsError):
+class GimmeAIRFLOWCredsMFAEnrollStatus(GimmeAIRFLOWCredsError):
     def __init__(self):
         super().__init__("You must enroll in MFA before using this tool.", 2)
 

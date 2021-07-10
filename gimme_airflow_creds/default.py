@@ -26,7 +26,7 @@ class DefaultResolver(object):
         return
 
     def _enumerate_saml_roles(self, assertion, saml_target_url):
-        """ using the assertion to fetch aws sign-in page, parse it and return aws sts creds """
+        """ using the assertion to fetch airflow sign-in page, parse it and return airflow sts creds """
         role_pairs = []
         root = ET.fromstring(base64.b64decode(assertion))
         for saml2_attribute in root.iter('{urn:oasis:names:tc:SAML:2.0:assertion}Attribute'):

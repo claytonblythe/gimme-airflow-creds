@@ -21,7 +21,7 @@ class RegisteredAuthenticators(object):
         """
         self.ui = gac_ui
         self._json_path = self.ui.environ.get(self.JSON_PATH_ENV_VAR,
-                                              os.path.join(self.ui.HOME, '.okta_aws_registered_authenticators'))
+                                              os.path.join(self.ui.HOME, '.okta_airflow_registered_authenticators'))
         self._create_file_if_necessary(self._json_path)
 
     @staticmethod

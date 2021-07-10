@@ -26,22 +26,21 @@ from okta.framework.OktaError import OktaError
 
 # local imports
 from . import errors, ui
-from .aws import AwsResolver
 from .config import Config
 from .default import DefaultResolver
 from .okta import OktaClient
 from .registered_authenticators import RegisteredAuthenticators
 
 
-class GimmeAWSCreds(object):
+class GimmeAIRFLOWCreds(object):
     """
-       This is a CLI tool that gets temporary AWS credentials
-       from Okta based the available AWS Okta Apps and roles
+       This is a CLI tool that gets temporary airflow credentials
+       from Okta based the available airflow Okta Apps and roles
        assigned to the user. The user is able to select the app
        and role from the CLI or specify them in a config file by
        passing --action-configure to the CLI too.
        gimme_airflow_creds will either write the credentials to stdout
-       or ~/.aws/credentials depending on what was specified when
+       or ~/.airflow/credentials depending on what was specified when
        --action-configure was ran.
 
        Usage:
@@ -73,20 +72,20 @@ class GimmeAWSCreds(object):
            gimme_creds_server = URL of the gimme-creds-server
            client_id = OAuth Client id for the gimme-creds-server
            okta_auth_server = Server ID for the OAuth authorization server used by gimme-creds-server
-           write_aws_creds = Option to write creds to ~/.aws/credentials
-           cred_profile = Use DEFAULT or Role-based name as the profile in ~/.aws/credentials
-           aws_appname = (optional) Okta AWS App Name
-           aws_rolename =  (optional) AWS Role ARN. 'ALL' will retrieve all roles, can be a CSV for multiple roles.
+           write_airflow_creds = Option to write creds to ~/.airflow/credentials
+           cred_profile = Use DEFAULT or Role-based name as the profile in ~/.airflow/credentials
+           airflow_appname = (optional) Okta airflow App Name
+           airflow_rolename =  (optional) airflow Role ARN. 'ALL' will retrieve all roles, can be a CSV for multiple roles.
            okta_username = (optional) Okta User Name
     """
     resolver = DefaultResolver()
     envvar_list = [
-        'AWS_DEFAULT_DURATION',
+        'AIRFLOW_DEFAULT_DURATION',
         'CLIENT_ID',
         'CRED_PROFILE',
-        'GIMME_AWS_CREDS_CLIENT_ID',
-        'GIMME_AWS_CREDS_CRED_PROFILE',
-        'GIMME_AWS_CREDS_OUTPUT_FORMAT',
+        'GIMME_AIRFLOW_CREDS_CLIENT_ID',
+        'GIMME_AIRFLOW_CREDS_CRED_PROFILE',
+        'GIMME_AIRFLOW_CREDS_OUTPUT_FORMAT',
         'OKTA_AUTH_SERVER',
         'OKTA_DEVICE_TOKEN',
         'OKTA_MFA_CODE',
@@ -95,9 +94,9 @@ class GimmeAWSCreds(object):
     ]
 
     envvar_conf_map = {
-        'GIMME_AWS_CREDS_CLIENT_ID': 'client_id',
-        'GIMME_AWS_CREDS_CRED_PROFILE': 'cred_profile',
-        'GIMME_AWS_CREDS_OUTPUT_FORMAT': 'output_format',
+        'GIMME_AIRFLOW_CREDS_CLIENT_ID': 'client_id',
+        'GIMME_AIRFLOW_CREDS_CRED_PROFILE': 'cred_profile',
+        'GIMME_AIRFLOW_CREDS_OUTPUT_FORMAT': 'output_format',
         'OKTA_DEVICE_TOKEN': 'device_token',
     }
 
@@ -107,18 +106,18 @@ class GimmeAWSCreds(object):
         """
         self.ui = ui
         self.FILE_ROOT = self.ui.HOME
-        self.AWS_CONFIG = self.ui.environ.get(
-            'AWS_SHARED_CREDENTIALS_FILE',
-            os.path.join(self.FILE_ROOT, '.aws', 'credentials')
+        self.AIRFLOW_CONFIG = self.ui.environ.get(
+            'AIRFLOW_SHARED_CREDENTIALS_FILE',
+            os.path.join(self.FILE_ROOT, '.airflow', 'credentials')
         )
         self._cache = {}
 
     #  this is modified code from https://github.com/nimbusscale/okta_aws_login
-    def _write_aws_creds(self, profile, access_key, secret_key, token, aws_config=None):
-        """ Writes the AWS STS token into the AWS credential file"""
-        # Check to see if the aws creds path exists, if not create it
-        aws_config = aws_config or self.AWS_CONFIG
-        creds_dir = os.path.dirname(aws_config)
+    def _write_airflow_creds(self, profile, access_key, secret_key, token, airflow_config=None):
+        """ Writes the airflow STS token into the airflow credential file"""
+        # Check to see if the airflow creds path exists, if not create it
+        airflow_config = airflow_config or self.AIRFLOW_CONFIG
+        creds_dir = os.path.dirname(airflow_config)
 
         if os.path.exists(creds_dir) is False:
             os.makedirs(creds_dir)
@@ -126,32 +125,32 @@ class GimmeAWSCreds(object):
         config = configparser.RawConfigParser()
 
         # Read in the existing config file if it exists
-        if os.path.isfile(aws_config):
-            config.read(aws_config)
+        if os.path.isfile(airflow_config):
+            config.read(airflow_config)
 
         # Put the credentials into a saml specific section instead of clobbering
         # the default credentials
         if not config.has_section(profile):
             config.add_section(profile)
 
-        config.set(profile, 'aws_access_key_id', access_key)
-        config.set(profile, 'aws_secret_access_key', secret_key)
-        config.set(profile, 'aws_session_token', token)
-        config.set(profile, 'aws_security_token', token)
+        config.set(profile, 'airflow_access_key_id', access_key)
+        config.set(profile, 'airflow_secret_access_key', secret_key)
+        config.set(profile, 'airflow_session_token', token)
+        config.set(profile, 'airflow_security_token', token)
 
         # Write the updated config file
-        with open(aws_config, 'w+') as configfile:
+        with open(airflow_config, 'w+') as configfile:
             config.write(configfile)
         # Update file permissions to secure  sensitive credentials file
-        os.chmod(aws_config, 0o600)
-        self.ui.result('Written profile {} to {}'.format(profile, aws_config))
+        os.chmod(airflow_config, 0o600)
+        self.ui.result('Written profile {} to {}'.format(profile, airflow_config))
 
-    def write_aws_creds_from_data(self, data, aws_config=None):
+    def write_airflow_creds_from_data(self, data, airflow_config=None):
         if not isinstance(data, dict):
             self.ui.warning('json line is not a dict! ' + repr(data))
             return
 
-        aws_config = aws_config or data.get('shared_credentials_file')
+        airflow_config = airflow_config or data.get('shared_credentials_file')
         credentials = data.get('credentials', {})
         profile = data.get('profile', {})
 
@@ -167,9 +166,9 @@ class GimmeAWSCreds(object):
         if not isinstance(credentials, dict):
             errs.append('credentials are not a dict!' + repr(credentials))
         else:
-            for key in ('aws_access_key_id',
-                        'aws_secret_access_key',
-                        'aws_session_token'):
+            for key in ('airflow_access_key_id',
+                        'airflow_secret_access_key',
+                        'airflow_session_token'):
                 value = credentials.get(key, None)
                 if not value:
                     errs.append(
@@ -182,60 +181,28 @@ class GimmeAWSCreds(object):
 
         arn = data.get('role', {}).get('arn', '<no-arn>')
         self.ui.result('Saving {} as {}'.format(arn, profile['name']))
-        self._write_aws_creds(
+        self._write_airflow_creds(
             profile['name'],
-            credentials['aws_access_key_id'],
-            credentials['aws_secret_access_key'],
-            credentials['aws_session_token'],
-            aws_config=aws_config,
+            credentials['airflow_access_key_id'],
+            credentials['airflow_secret_access_key'],
+            credentials['airflow_session_token'],
+            airflow_config=airflow_config,
         )
 
-    @staticmethod
-    def _get_partition_from_saml_acs(saml_acs_url):
-        """ Determine the AWS partition by looking at the ACS endpoint URL"""
-        if saml_acs_url == 'https://signin.aws.amazon.com/saml':
-            return 'aws'
-        elif saml_acs_url == 'https://signin.amazonaws.cn/saml':
-            return 'aws-cn'
-        elif saml_acs_url == 'https://signin.amazonaws-us-gov.com/saml':
-            return 'aws-us-gov'
-        else:
-            raise errors.GimmeAWSCredsError("{} is an unknown ACS URL".format(saml_acs_url))
 
-    @staticmethod
-    def _get_sts_creds(partition, assertion, idp, role, duration=3600):
-        """ using the assertion and arns return aws sts creds """
-
-        # Use the first available region for partitions other than the public AWS
-        session = boto3.session.Session(profile_name=None)
-        if partition != 'aws':
-            regions = session.get_available_regions('sts', partition)
-            client = session.client('sts', regions[0])
-        else:
-            client = session.client('sts')
-
-        response = client.assume_role_with_saml(
-            RoleArn=role,
-            PrincipalArn=idp,
-            SAMLAssertion=assertion,
-            DurationSeconds=duration
-        )
-
-        return response['Credentials']
-
-    @staticmethod
+    @staticmethodx
     def _call_gimme_creds_server(okta_connection, gimme_creds_server_url):
-        """ Retrieve the user's AWS accounts from the gimme_creds_server"""
+        """ Retrieve the user's airflow accounts from the gimme_creds_server"""
         response = okta_connection.get(gimme_creds_server_url)
 
         # Throw an error if we didn't get any accounts back
         if not response.json():
-            raise errors.GimmeAWSCredsError("No AWS accounts found.")
+            raise errors.GimmeAIRFLOWCredsError("No airflow accounts found.")
 
-        return response.json()
+        return response.json()x
 
     @staticmethod
-    def _get_aws_account_info(okta_org_url, okta_api_key, username):
+    def _get_airflow_account_info(okta_org_url, okta_api_key, username):
         """ Call the Okta User API and process the results to return
         just the information we need for gimme_airflow_creds"""
         # We need access to the entire JSON response from the Okta APIs, so we need to
@@ -248,9 +215,9 @@ class GimmeAWSCreds(object):
             user = result.json()
         except OktaError as e:
             if e.error_code == 'E0000007':
-                raise errors.GimmeAWSCredsError("Error: " + username + " was not found!")
+                raise errors.GimmeAIRFLOWCredsError("Error: " + username + " was not found!")
             else:
-                raise errors.GimmeAWSCredsError("Error: " + e.error_summary)
+                raise errors.GimmeAIRFLOWCredsError("Error: " + e.error_summary)
 
         try:
             # Get first page of results
@@ -264,15 +231,15 @@ class GimmeAWSCreds(object):
             ui.default.info("done\n")
         except OktaError as e:
             if e.error_code == 'E0000007':
-                raise errors.GimmeAWSCredsError("Error: No applications found for " + username)
+                raise errors.GimmeAIRFLOWCredsError("Error: No applications found for " + username)
             else:
-                raise errors.GimmeAWSCredsError("Error: " + e.error_summary)
+                raise errors.GimmeAIRFLOWCredsError("Error: " + e.error_summary)
 
         # Loop through the list of apps and filter it down to just the info we need
         app_list = []
         for app in final_result:
-            # All AWS connections have the same app name
-            if app['appName'] == 'amazon_aws':
+            # All airflow connections have the same app name
+            if app['appName'] == 'amazon_airflow':
                 new_app_entry = {
                     'id': app['id'],
                     'name': app['label'],
@@ -285,19 +252,10 @@ class GimmeAWSCreds(object):
 
         # Throw an error if we didn't get any accounts back
         if not app_list:
-            raise errors.GimmeAWSCredsError("No AWS accounts found.")
+            raise errors.GimmeAIRFLOWCredsError("No airflow accounts found.")
 
         return app_list
 
-    @staticmethod
-    def _parse_role_arn(arn):
-        """ Extracts account number, path and role name from role arn string """
-        matches = re.match(r"arn:(aws|aws-cn|aws-us-gov):iam:.*:(?P<accountid>\d{12}):role(?P<path>(/[\w/]+)?/)(?P<role>\S+)", arn)
-        return {
-            'account': matches.group('accountid'),
-            'role': matches.group('role'),
-            'path': matches.group('path')
-        }
 
     @staticmethod
     def _get_alias_from_friendly_name(friendly_name):
@@ -308,19 +266,19 @@ class GimmeAWSCreds(object):
             res = matches.group('alias')
         return res
 
-    def _choose_app(self, aws_info):
+    def _choose_app(self, airflow_info):
         """ gets a list of available apps and
         ask the user to select the app they want
         to assume a roles for and returns the selection
         """
-        if not aws_info:
+        if not airflow_info:
             return None
 
-        if len(aws_info) == 1:
-            return aws_info[0]  # auto select when only 1 choice
+        if len(airflow_info) == 1:
+            return airflow_info[0]  # auto select when only 1 choice
 
         app_strs = []
-        for i, app in enumerate(aws_info):
+        for i, app in enumerate(airflow_info):
             app_strs.append('[{}] {}'.format(i, app["name"]))
 
         if app_strs:
@@ -331,28 +289,28 @@ class GimmeAWSCreds(object):
         else:
             return None
 
-        selection = self._get_user_int_selection(0, len(aws_info) - 1)
+        selection = self._get_user_int_selection(0, len(airflow_info) - 1)
 
         if selection is None:
-            raise errors.GimmeAWSCredsError("You made an invalid selection")
+            raise errors.GimmeAIRFLOWCredsError("You made an invalid selection")
 
-        return aws_info[int(selection)]
+        return airflow_info[int(selection)]
 
-    def _get_selected_app(self, aws_appname, aws_info):
+    def _get_selected_app(self, airflow_appname, airflow_info):
         """ select the application from the config file if it exists in the
         results from Okta.  If not, present the user with a menu."""
 
-        if aws_appname:
-            for _, app in enumerate(aws_info):
-                if app["name"] == aws_appname:
+        if airflow_appname:
+            for _, app in enumerate(airflow_info):
+                if app["name"] == airflow_appname:
                     return app
                 elif app["name"] == "fakelabel":
                     # auto select this app
                     return app
-            self.ui.error("ERROR: AWS account [{}] not found!".format(aws_appname))
+            self.ui.error("ERROR: airflow account [{}] not found!".format(airflow_appname))
 
         # Present the user with a list of apps to choose from
-        return self._choose_app(aws_info)
+        return self._choose_app(airflow_info)
 
     def _get_user_int_selection(self, min_int, max_int, max_retries=5):
         selection = None
@@ -372,12 +330,12 @@ class GimmeAWSCreds(object):
 
         return selection
 
-    def _get_selected_roles(self, requested_roles, aws_roles):
+    def _get_selected_roles(self, requested_roles, airflow_roles):
         """ select the role from the config file if it exists in the
         results from Okta.  If not, present the user with a menu. """
         # 'all' is a special case - skip processing
         if requested_roles == 'all':
-            return set(role.role for role in aws_roles)
+            return set(role.role for role in airflow_roles)
         # check to see if a role is in the config and look for it in the results from Okta
         if requested_roles:
             ret = set()
@@ -391,16 +349,16 @@ class GimmeAWSCreds(object):
 
                 is_regexp = len(role_name) > 2 and role_name[0] == role_name[-1] == '/'
                 pattern = re.compile(role_name[1:-1])
-                for aws_role in aws_roles:
-                    if aws_role.role == role_name or (is_regexp and pattern.search(aws_role.role)):
-                        ret.add(aws_role.role)
+                for airflow_role in airflow_roles:
+                    if airflow_role.role == role_name or (is_regexp and pattern.search(airflow_role.role)):
+                        ret.add(airflow_role.role)
 
             if ret:
                 return ret
-            self.ui.error("ERROR: AWS roles [{}] not found!".format(', '.join(requested_roles)))
+            self.ui.error("ERROR: airflow roles [{}] not found!".format(', '.join(requested_roles)))
 
         # Present the user with a list of roles to choose from
-        return self._choose_roles(aws_roles)
+        return self._choose_roles(airflow_roles)
 
     def _choose_roles(self, roles):
         """ gets a list of available roles and
@@ -428,7 +386,7 @@ class GimmeAWSCreds(object):
         selections = self._get_user_int_selections_many(0, len(roles) - 1)
 
         if not selections:
-            raise errors.GimmeAWSCredsError("You made an invalid selection")
+            raise errors.GimmeAIRFLOWCredsError("You made an invalid selection")
 
         return {roles[int(selection)].role for selection in selections}
 
@@ -467,7 +425,7 @@ class GimmeAWSCreds(object):
     def run(self):
         try:
             self._run()
-        except errors.GimmeAWSCredsExitBase as exc:
+        except errors.GimmeAIRFLOWCredsExitBase as exc:
             exc.handle()
 
     def generate_config(self):
@@ -483,11 +441,11 @@ class GimmeAWSCreds(object):
                 key = self.envvar_conf_map.get(value, value).lower()
                 self.conf_dict[key] = self.ui.environ.get(value)
 
-        # AWS Default session duration ....
-        if self.conf_dict.get('aws_default_duration'):
-            self.config.aws_default_duration = int(self.conf_dict['aws_default_duration'])
+        # airflow Default session duration ....
+        if self.conf_dict.get('airflow_default_duration'):
+            self.config.airflow_default_duration = int(self.conf_dict['airflow_default_duration'])
         else:
-            self.config.aws_default_duration = 3600
+            self.config.airflow_default_duration = 3600
 
         self.resolver = self.get_resolver()
         return config
@@ -516,14 +474,14 @@ class GimmeAWSCreds(object):
     def okta_org_url(self):
         ret = self.conf_dict.get('okta_org_url')
         if not ret:
-            raise errors.GimmeAWSCredsError('No Okta organization URL in configuration.  Try running --config again.')
+            raise errors.GimmeAIRFLOWCredsError('No Okta organization URL in configuration.  Try running --config again.')
         return ret
 
     @property
     def gimme_creds_server(self):
         ret = self.conf_dict.get('gimme_creds_server')
         if not ret:
-            raise errors.GimmeAWSCredsError('No Gimme-Creds server URL in configuration.  Try running --config again.')
+            raise errors.GimmeAIRFLOWCredsError('No Gimme-Creds server URL in configuration.  Try running --config again.')
         return ret
 
     @property
@@ -558,13 +516,6 @@ class GimmeAWSCreds(object):
                                  or self.conf_dict.get('remember_device', False))
         return okta
 
-    def get_resolver(self):
-        if self.config.resolve:
-            return AwsResolver(self.config.verify_ssl_certs)
-        elif str(self.conf_dict.get('resolve_aws_alias')) == 'True':
-            return AwsResolver(self.config.verify_ssl_certs)
-        return self.resolver
-
     @property
     def device_token(self):
         if self.config.action_register_device is True:
@@ -584,16 +535,16 @@ class GimmeAWSCreds(object):
         return auth_result
 
     @property
-    def aws_results(self):
-        if 'aws_results' in self._cache:
-            return self._cache['aws_results']
+    def airflow_results(self):
+        if 'airflow_results' in self._cache:
+            return self._cache['airflow_results']
         # Call the Okta APIs and process data locally
         if self.gimme_creds_server == 'internal':
             # Okta API key is required when calling Okta APIs internally
             if self.config.api_key is None:
-                raise errors.GimmeAWSCredsError('OKTA_API_KEY environment variable not found!')
+                raise errors.GimmeAIRFLOWCredsError('OKTA_API_KEY environment variable not found!')
             auth_result = self.auth_session
-            aws_results = self._get_aws_account_info(self.okta_org_url, self.config.api_key,
+            airflow_results = self._get_airflow_account_info(self.okta_org_url, self.config.api_key,
                                                      auth_result['username'])
 
         elif self.gimme_creds_server == 'appurl':
@@ -603,48 +554,25 @@ class GimmeAWSCreds(object):
             if self.conf_dict.get('app_url'):
                 self.config.app_url = self.conf_dict['app_url']
             if self.config.app_url is None:
-                raise errors.GimmeAWSCredsError('app_url is not defined in your config!')
+                raise errors.GimmeAIRFLOWCredsError('app_url is not defined in your config!')
 
             # build app list
-            aws_results = []
+            airflow_results = []
             new_app_entry = {
                 'id': 'fakeid',  # not used anyway
                 'name': 'fakelabel',  # not used anyway
                 'links': {'appLink': self.config.app_url}
             }
-            aws_results.append(new_app_entry)
+            airflow_results.append(new_app_entry)
 
-        # Use the gimme_creds_lambda service
-        else:
-            if not self.conf_dict.get('client_id'):
-                raise errors.GimmeAWSCredsError('No OAuth Client ID in configuration.  Try running --config again.')
-            if not self.conf_dict.get('okta_auth_server'):
-                raise errors.GimmeAWSCredsError(
-                    'No OAuth Authorization server in configuration.  Try running --config again.')
-
-            # Authenticate with Okta and get an OAuth access token
-            self.okta.auth_oauth(
-                self.conf_dict['client_id'],
-                authorization_server=self.conf_dict['okta_auth_server'],
-                access_token=True,
-                id_token=False,
-                scopes=['openid']
-            )
-
-            # Add Access Tokens to Okta-protected requests
-            self.okta.use_oauth_access_token(True)
-
-            self.ui.info("Authentication Success! Calling Gimme-Creds Server...")
-            aws_results = self._call_gimme_creds_server(self.okta, self.gimme_creds_server)
-
-        self._cache['aws_results'] = aws_results
-        return aws_results
+        self._cache['airflow_results'] = airflow_results
+        return airflow_results
 
     @property
     def aws_app(self):
         if 'aws_app' in self._cache:
             return self._cache['aws_app']
-        self._cache['aws_app'] = aws_app = self._get_selected_app(self.conf_dict.get('aws_appname'), self.aws_results)
+        self._cache['airflow_app'] = aws_app = self._get_selected_app(self.conf_dict.get('aws_appname'), self.aws_results)
         return aws_app
 
     @property
@@ -726,7 +654,7 @@ class GimmeAWSCreds(object):
         profile_name = self.get_profile_name(cred_profile, include_path, naming_data, resolve_alias, role)
 
         return {
-            'shared_credentials_file': self.AWS_CONFIG,
+            'shared_credentials_file': self.AIRFLOW_CONFIG,
             'profile': {
                 'name': profile_name,
                 'derived_name': naming_data['role'],
@@ -821,14 +749,14 @@ class GimmeAWSCreds(object):
             return
         else:
             # Defaults to `export` format
-            self.ui.result("export AWS_ROLE_ARN=" + data['role']['arn'])
-            self.ui.result("export AWS_ACCESS_KEY_ID=" +
+            self.ui.result("export AIRFLOW_ROLE_ARN=" + data['role']['arn'])
+            self.ui.result("export AIRFLOW_ACCESS_KEY_ID=" +
                            data['credentials']['aws_access_key_id'])
-            self.ui.result("export AWS_SECRET_ACCESS_KEY=" +
+            self.ui.result("export AIRFLOW_SECRET_ACCESS_KEY=" +
                            data['credentials']['aws_secret_access_key'])
-            self.ui.result("export AWS_SESSION_TOKEN=" +
+            self.ui.result("export AIRFLOW_SESSION_TOKEN=" +
                            data['credentials']['aws_session_token'])
-            self.ui.result("export AWS_SECURITY_TOKEN=" +
+            self.ui.result("export AIRFLOW_SECURITY_TOKEN=" +
                            data['credentials']['aws_security_token'])
 
 
@@ -837,15 +765,15 @@ class GimmeAWSCreds(object):
         if not self.config.action_configure:
             return
         self.config.update_config_file()
-        raise errors.GimmeAWSCredsExitSuccess()
+        raise errors.GimmeAIRFLOWCredsExitSuccess()
 
     def handle_action_list_profiles(self):
         if not self.config.action_list_profiles:
             return
         if os.path.isfile(self.config.OKTA_CONFIG):
             with open(self.config.OKTA_CONFIG, 'r') as okta_config:
-                raise errors.GimmeAWSCredsExitSuccess(result=okta_config.read())
-        raise errors.GimmeAWSCredsExitError('{} is not a file'.format(self.config.OKTA_CONFIG))
+                raise errors.GimmeAIRFLOWCredsExitSuccess(result=okta_config.read())
+        raise errors.GimmeAIRFLOWCredsExitError('{} is not a file'.format(self.config.OKTA_CONFIG))
 
     def handle_action_store_json_creds(self, stream=None):
         if not self.config.action_store_json_creds:
@@ -859,7 +787,7 @@ class GimmeAWSCreds(object):
                 self.ui.warning('error parsing json line {}'.format(repr(line)))
                 continue
             self.write_aws_creds_from_data(data)
-        raise errors.GimmeAWSCredsExitSuccess()
+        raise errors.GimmeAIRFLOWCredsExitSuccess()
 
     def handle_action_register_device(self):
         # Capture the Device Token and write it to the config file
@@ -877,11 +805,11 @@ class GimmeAWSCreds(object):
             self.ui.notify('\nDevice token saved!\n')
 
             if self.config.action_register_device is True:
-                raise errors.GimmeAWSCredsExitSuccess()
+                raise errors.GimmeAIRFLOWCredsExitSuccess()
 
     def handle_action_list_roles(self):
         if self.config.action_list_roles:
-            raise errors.GimmeAWSCredsExitSuccess(result='\n'.join(map(str, self.aws_roles)))
+            raise errors.GimmeAIRFLOWCredsExitSuccess(result='\n'.join(map(str, self.aws_roles)))
 
     def handle_setup_fido_authenticator(self):
         if self.config.action_setup_fido_authenticator:
@@ -898,4 +826,4 @@ class GimmeAWSCreds(object):
 
             registered_authenticators = RegisteredAuthenticators(self.ui)
             registered_authenticators.add_authenticator(credential_id, user)
-            raise errors.GimmeAWSCredsExitSuccess()
+            raise errors.GimmeAIRFLOWCredsExitSuccess()

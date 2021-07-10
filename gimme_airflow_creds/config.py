@@ -34,7 +34,7 @@ class Config(object):
         self.FILE_ROOT = self.ui.HOME
         self.OKTA_CONFIG = self.ui.environ.get(
             'OKTA_CONFIG',
-            os.path.join(self.FILE_ROOT, '.okta_aws_login_config')
+            os.path.join(self.FILE_ROOT, '.okta_airflow_login_config')
         )
         self.action_register_device = False
         self.username = None
@@ -45,7 +45,7 @@ class Config(object):
         self.resolve = False
         self.mfa_code = None
         self.remember_device = False
-        self.aws_default_duration = 3600
+        self.airflow_default_duration = 3600
         self.device_token = None
         self.action_configure = False
         self.action_list_profiles = False
@@ -69,7 +69,7 @@ class Config(object):
     def get_args(self):
         """Get the CLI args"""
         parser = argparse.ArgumentParser(
-            description="Gets a STS token to use for AWS CLI based on a SAML assertion from Okta"
+            description="Gets a session token to use for Airflow REST API based on a SAML assertion from Okta"
         )
         parser.add_argument(
             '--username', '-u',
@@ -100,7 +100,7 @@ class Config(object):
         )
         parser.add_argument(
             '--roles',
-            help='If set, the specified role will be used instead of the aws_rolename in the profile, '
+            help='If set, the specified role will be used instead of the airflow_rolename in the profile, '
                  'can be specified as a comma separated list, '
                  'can be regex in format /<pattern>/. '
                  'for example: arn:aws:iam::123456789012:role/Admin,/:210987654321:/ '
@@ -134,13 +134,13 @@ class Config(object):
             help='gimme-airflow-creds version')
         parser.add_argument(
             '--action-list-profiles', '--list-profiles', action='store_true',
-            help='List all the profiles under .okta_aws_login_config')
+            help='List all the profiles under .okta_airflow_login_config')
         parser.add_argument(
             '--action-list-roles', action='store_true',
             help='List all the roles in the selected profile')
         parser.add_argument(
             '--action-store-json-creds', action='store_true',
-            help='Read credentials from stdin (in json format) and store them in ~/.aws/credentials file')
+            help='Read credentials from stdin (in json format) and store them in ~/.airflow/credentials file')
         parser.add_argument(
             '--action-setup-fido-authenticator', action='store_true',
             help='Sets up a new FIDO WebAuthn authenticator in Okta'
@@ -210,19 +210,19 @@ class Config(object):
 
     def update_config_file(self):
         """
-           Prompts user for config details for the okta_aws_login tool.
+           Prompts user for config details for the okta_airflow_login tool.
            Either updates existing config file or creates new one.
            Config Options:
                 okta_org_url = Okta URL
                 gimme_creds_server = URL of the gimme-creds-server or 'internal' for local processing or 'appurl' when app url available
                 client_id = OAuth Client id for the gimme-creds-server
                 okta_auth_server = Server ID for the OAuth authorization server used by gimme-creds-server
-                write_aws_creds = Option to write creds to ~/.aws/credentials
-                cred_profile = Use DEFAULT or Role-based name as the profile in ~/.aws/credentials
-                aws_appname = (optional) Okta AWS App Name
-                aws_rolename =  (optional) Okta Role ARN
+                write_airflow_creds = Option to write creds to ~/.airflow/credentials
+                cred_profile = Use DEFAULT or Role-based name as the profile in ~/.airflow/credentials
+                airflow_appname = (optional) Okta AWS App Name
+                airflow_rolename =  (optional) Okta Role ARN
                 okta_username = Okta username
-                aws_default_duration = Default AWS session duration (3600)
+                airflow_default_duration = Default AWS session duration (3600)
                 preferred_mfa_type = Select this MFA device type automatically
                 include_path - (optional) includes that full role path to the role name for profile
 
@@ -236,17 +236,17 @@ class Config(object):
             'okta_auth_server': '',
             'client_id': '',
             'gimme_creds_server': 'appurl',
-            'aws_appname': '',
-            'aws_rolename': ','.join(self.roles),
-            'write_aws_creds': '',
+            'airflow_appname': '',
+            'airflow_rolename': ','.join(self.roles),
+            'write_airflow_creds': '',
             'cred_profile': 'role',
             'okta_username': '',
             'app_url': '',
-            'resolve_aws_alias': 'n',
+            'resolve_airflow_alias': 'n',
             'include_path': 'n',
             'preferred_mfa_type': '',
             'remember_device': 'n',
-            'aws_default_duration': '3600',
+            'airflow_default_duration': '3600',
             'device_token': '',
             'output_format': 'export',
         }
@@ -273,22 +273,22 @@ class Config(object):
             config_dict['client_id'] = self._get_client_id_entry(defaults['client_id'])
             config_dict['okta_auth_server'] = self._get_auth_server_entry(defaults['okta_auth_server'])
 
-        config_dict['write_aws_creds'] = self._get_write_aws_creds(defaults['write_aws_creds'])
+        config_dict['write_airflow_creds'] = self._get_write_airflow_creds(defaults['write_airflow_creds'])
         if config_dict['gimme_creds_server'] != 'appurl':
-            config_dict['aws_appname'] = self._get_aws_appname(defaults['aws_appname'])
-        config_dict['resolve_aws_alias'] = self._get_resolve_aws_alias(defaults['resolve_aws_alias'])
+            config_dict['airflow_appname'] = self._get_airflow_appname(defaults['airflow_appname'])
+        config_dict['resolve_airflow_alias'] = self._get_resolve_airflow_alias(defaults['resolve_airflow_alias'])
         config_dict['include_path'] = self._get_include_path(defaults['include_path'])
-        config_dict['aws_rolename'] = self._get_aws_rolename(defaults['aws_rolename'])
+        config_dict['airflow_rolename'] = self._get_airflow_rolename(defaults['airflow_rolename'])
         config_dict['okta_username'] = self._get_okta_username(defaults['okta_username'])
-        config_dict['aws_default_duration'] = self._get_aws_default_duration(defaults['aws_default_duration'])
+        config_dict['airflow_default_duration'] = self._get_airflow_default_duration(defaults['airflow_default_duration'])
         config_dict['preferred_mfa_type'] = self._get_preferred_mfa_type(defaults['preferred_mfa_type'])
         config_dict['remember_device'] = self._get_remember_device(defaults['remember_device'])
         config_dict["output_format"] = ''
-        if not config_dict["write_aws_creds"]:
+        if not config_dict["write_airflow_creds"]:
             config_dict['output_format'] = self._get_output_format(defaults['output_format'])
 
-        # If write_aws_creds is True get the profile name
-        if config_dict['write_aws_creds'] is True:
+        # If write_airflow_creds is True get the profile name
+        if config_dict['write_airflow_creds'] is True:
             config_dict['cred_profile'] = self._get_cred_profile(defaults['cred_profile'])
         else:
             config_dict['cred_profile'] = defaults['cred_profile']
@@ -348,7 +348,7 @@ class Config(object):
     def _get_appurl_entry(self, default_entry):
         """ Get and validate app_url """
         ui.default.message(
-            "Enter the application link. This is https://something.okta[preview].com/home/amazon_aws/<app_id>/something")
+            "Enter the application link. This is https://something.okta[preview].com/home/amazon_airflow/<app_id>/something")
         okta_org_url_valid = False
         app_url = default_entry
 
@@ -389,10 +389,10 @@ class Config(object):
 
         return gimme_creds_server
 
-    def _get_write_aws_creds(self, default_entry):
-        """ Option to write to the ~/.aws/credentials or to stdour"""
+    def _get_write_airflow_creds(self, default_entry):
+        """ Option to write to the ~/.airflow/credentials or to stdour"""
         ui.default.message(
-            "Do you want to write the temporary AWS to ~/.aws/credentials?"
+            "Do you want to write the temporary AWS to ~/.airflow/credentials?"
             "\nIf no, the credentials will be written to stdout."
             "\nPlease answer y or n.")
 
@@ -415,10 +415,10 @@ class Config(object):
             except ValueError:
                 ui.default.warning("Include Path must be either y or n.")
 
-    def _get_resolve_aws_alias(self, default_entry):
+    def _get_resolve_airflow_alias(self, default_entry):
         """ Option to resolve account id to alias """
         ui.default.message(
-            "Do you want to resolve aws account id to aws alias ?"
+            "Do you want to resolve airflow account id to airflow alias ?"
             "\nPlease answer y or n.")
         while True:
             try:
@@ -427,7 +427,7 @@ class Config(object):
                 ui.default.warning("Resolve AWS alias must be either y or n.")
 
     def _get_cred_profile(self, default_entry):
-        """sets the aws credential profile name"""
+        """sets the airflow credential profile name"""
         ui.default.message(
             "The AWS credential profile defines which profile is used to store the temp AWS creds.\n"
             "If set to 'role' then a new profile will be created matching the role name assumed by the user.\n"
@@ -444,21 +444,21 @@ class Config(object):
 
         return cred_profile
 
-    def _get_aws_appname(self, default_entry):
+    def _get_airflow_appname(self, default_entry):
         """ Get Okta AWS App name """
         ui.default.message(
             "Enter the AWS Okta App Name."
             "\nThis is optional, you can select the App when you run the CLI.")
-        aws_appname = self._get_user_input("AWS App Name", default_entry)
-        return aws_appname
+        airflow_appname = self._get_user_input("AWS App Name", default_entry)
+        return airflow_appname
 
-    def _get_aws_rolename(self, default_entry):
+    def _get_airflow_rolename(self, default_entry):
         """ Get the AWS Role ARN"""
         ui.default.message(
             "Enter the ARN for the AWS role you want credentials for. 'all' will retrieve all roles."
             "\nThis is optional, you can select the role when you run the CLI.")
-        aws_rolename = self._get_user_input("AWS Role ARN", default_entry)
-        return aws_rolename
+        airflow_rolename = self._get_user_input("AWS Role ARN", default_entry)
+        return airflow_rolename
 
     def _get_conf_profile_name(self, default_entry):
         """Get and validate configuration profile name. [Optional]"""
@@ -479,14 +479,14 @@ class Config(object):
             "Okta User Name", default_entry)
         return okta_username
 
-    def _get_aws_default_duration(self, default_entry):
-        """Get and validate the aws default session duration. [Optional]"""
+    def _get_airflow_default_duration(self, default_entry):
+        """Get and validate the airflow default session duration. [Optional]"""
         ui.default.message(
             "If you'd like to set the default session duration, specify it (in seconds).\n"
             "This is optional.")
-        aws_default_duration = self._get_user_input(
+        airflow_default_duration = self._get_user_input(
             "AWS Default Session Duration", default_entry)
-        return aws_default_duration
+        return airflow_default_duration
 
     def _get_preferred_mfa_type(self, default_entry):
         """Get the user's preferred MFA device [Optional]"""
